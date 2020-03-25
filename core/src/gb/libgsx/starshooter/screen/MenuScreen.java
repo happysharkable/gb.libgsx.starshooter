@@ -13,15 +13,22 @@ public class MenuScreen extends BaseScreen {
     private Texture img;
     private Vector2 pos;
     private Vector2 v;
-//    private float rotate;
+    private Vector2 direction;
+    private Vector2 normalVector;
+    private float toX;
+    private float toY;
+    private int rotation;
+    private int speed = 2;
 
     @Override
     public void show() {
         super.show();
-        img = new Texture("badlogic.jpg");
+        img = new Texture("red_bug.png");
         pos = new Vector2();
-        v = new Vector2(0.3f, 0.3f);
-//        rotate = 0;
+        v = new Vector2(0f, 0f);
+        direction = new Vector2(0f, 0f);
+        normalVector = new Vector2(0f, 1f);
+        rotation = 0;
     }
 
     @Override
@@ -39,22 +46,33 @@ public class MenuScreen extends BaseScreen {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        pos.set(screenX, Gdx.graphics.getHeight() - screenY);
+        toX = screenX - img.getWidth() / 2f;
+        toY = Gdx.graphics.getHeight() - screenY - img.getHeight() / 2f;
+        v.set(direction.set(toX - pos.x, toY - pos.y).nor());
+        rotation = 360 - (int)direction.angle(normalVector);
+        return false;
+    }
+
+    @Override
+    public boolean keyDown(int keycode) {
+        if (keycode >= 7 && keycode <= 16)
+            speed = keycode - 7;
+
         return false;
     }
 
     private void update(float delta) {
-        pos.add(v);
-//        rotate += 1;
+        if ((int)toX == Math.round(pos.x) && (int)toY == Math.round(pos.y))
+            v.set(0f, 0f);
+
+        pos.add(v.cpy().scl(speed));
     }
 
     private void draw() {
-        Gdx.gl.glClearColor(0.5f, 0.7f, 0.8f, 1);
+        Gdx.gl.glClearColor(0.1f, 0.6f, 0.1f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
-        batch.draw(img, 0, 0);
-        batch.draw(img, pos.x, pos.y);
-//        batch.draw(new TextureRegion(img), pos.x, pos.y, pos.x, pos.y, 250, 250, 1, 1, rotate);
+        batch.draw(new TextureRegion(img), pos.x, pos.y, img.getWidth() / 2f, img.getHeight() / 2f, img.getWidth(), img.getHeight(), 1, 1, rotation);
         batch.end();
     }
 
